@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using PaoMazzaAPI.Models;
 
 namespace PaoMazzaAPI
@@ -22,7 +23,15 @@ namespace PaoMazzaAPI
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<PaoMazzaAPIContext>(opt => opt.UseNpgsql (Configuration.GetConnectionString("PostgreSqlConnection")));
+            // Cuando el usuario y la password están protegidas con secrets
+            var builder = new NpgsqlConnectionStringBuilder();
+            builder.ConnectionString = Configuration.GetConnectionString("PostgreSqlConnection");
+            builder.Username = Configuration["UserID"];
+            builder.Password = Configuration["Password"];
+            services.AddDbContext<PaoMazzaAPIContext>(opt => opt.UseNpgsql(builder.ConnectionString));
+            
+            // Cuando la cadena de conexión está completa
+            //services.AddDbContext<PaoMazzaAPIContext>(opt => opt.UseNpgsql (Configuration.GetConnectionString("PostgreSqlConnection")));
             
             // Agrego el servicio para usar Controllers
             services.AddControllers();
